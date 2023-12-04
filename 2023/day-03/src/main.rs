@@ -16,6 +16,7 @@ fn main() -> io::Result<()> {
     // get values for the first line
     result_for_task_1 += get_line_value_1(&prev, vec![&curr]);
     result_for_task_2 += get_line_value_2(&prev, vec![&curr]);
+
     while let Some(Ok(next)) = lines.next() {
         let next = Line::from(&next);
         result_for_task_1 += get_line_value_1(&curr, vec![&prev, &next]);

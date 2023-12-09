@@ -45,9 +45,6 @@ fn get_value_for_task(str: &str, joker: bool) -> u64 {
 }
 
 fn convert_card_to_comparable(card: char, joker: bool) -> char {
-    if card.is_ascii_digit() {
-        return card;
-    }
     if joker && card == 'J' {
         return '1';
     }
@@ -57,7 +54,7 @@ fn convert_card_to_comparable(card: char, joker: bool) -> char {
         'Q' => 'C',
         'K' => 'D',
         'A' => 'E',
-        _ => panic!("Unknown card: {card}"),
+        digit => digit,
     }
 }
 

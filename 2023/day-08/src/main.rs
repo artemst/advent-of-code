@@ -3,6 +3,12 @@ use std::{collections::HashMap, io};
 
 use num::integer::lcm;
 
+#[derive(Debug, Clone, Copy)]
+enum Direction {
+    Left,
+    Right,
+}
+
 fn main() -> io::Result<()> {
     let args: Vec<String> = std::env::args().collect();
     let input_filename = if args.get(1).is_some_and(|arg| arg.starts_with("-d")) {
@@ -13,7 +19,16 @@ fn main() -> io::Result<()> {
 
     let file = std::fs::read_to_string(input_filename)?;
     let (instructions, map) = file.split_once("\n\n").unwrap();
-    let instructions = Instructions::from(instructions);
+    let instructions: Vec<Direction> = instructions
+        .trim()
+        .chars()
+        .map(|c| match c {
+            'L' => Direction::Left,
+            'R' => Direction::Right,
+            dir => panic!("Unknown direction: {dir}"),
+        })
+        .collect();
+
     let map = map
         .trim()
         .split('\n')
@@ -34,9 +49,9 @@ fn main() -> io::Result<()> {
     Ok(())
 }
 
-fn get_value_for_task_1(instructions: &Instructions, map: &HashMap<&str, (&str, &str)>) -> usize {
+fn get_value_for_task_1(instructions: &[Direction], map: &HashMap<&str, (&str, &str)>) -> usize {
     let mut last_code = "AAA";
-    for (counter, i) in instructions.clone().enumerate() {
+    for (counter, i) in instructions.iter().cycle().enumerate() {
         last_code = match i {
             Direction::Left => map[last_code].0,
             Direction::Right => map[last_code].1,
@@ -49,13 +64,13 @@ fn get_value_for_task_1(instructions: &Instructions, map: &HashMap<&str, (&str, 
     0
 }
 
-fn get_value_for_task_2(instructions: &Instructions, map: &HashMap<&str, (&str, &str)>) -> usize {
+fn get_value_for_task_2(instructions: &[Direction], map: &HashMap<&str, (&str, &str)>) -> usize {
     let starts: Vec<&str> = map.keys().cloned().filter(|k| k.ends_with('A')).collect();
     starts
         .iter()
         .map(|&k| {
             let mut last_code = k;
-            for (counter, i) in instructions.clone().enumerate() {
+            for (counter, i) in instructions.iter().cycle().enumerate() {
                 last_code = match i {
                     Direction::Left => map[last_code].0,
                     Direction::Right => map[last_code].1,
@@ -67,47 +82,4 @@ fn get_value_for_task_2(instructions: &Instructions, map: &HashMap<&str, (&str, 
             0
         })
         .fold(1, lcm) // calculate Least Common Multiply for all results
-}
-
-#[derive(Debug, Clone, Copy)]
-enum Direction {
-    Left,
-    Right,
-}
-
-#[derive(Debug, Clone)]
-struct Instructions {
-    data: Vec<Direction>,
-    pos: usize,
-}
-
-impl Instructions {
-    fn from(str: &str) -> Self {
-        Self {
-            data: str
-                .trim()
-                .chars()
-                .map(|c| match c {
-                    'L' => Direction::Left,
-                    'R' => Direction::Right,
-                    dir => panic!("Unknown direction: {dir}"),
-                })
-                .collect(),
-            pos: 0,
-        }
-    }
-}
-
-impl Iterator for Instructions {
-    type Item = Direction;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        let result = self.data[self.pos];
-        if self.pos + 1 == self.data.len() {
-            self.pos = 0;
-        } else {
-            self.pos += 1;
-        }
-        Some(result)
-    }
 }
